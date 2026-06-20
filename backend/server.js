@@ -33,6 +33,7 @@ const defaultData = {
   subscribers: [],
   notifications: [],
   campaigns: [],
+  themePresets: [],
   refreshTokens: [],
   settings: {
     siteName: 'PushNotif Admin',
@@ -42,7 +43,20 @@ const defaultData = {
     defaultUrl: WIDGET_TARGET,
     enableWidget: true,
     allowedOrigins: '*',
-    widgetPosition: 'bottom-right'
+    widgetPosition: 'bottom-right',
+    widgetColor: '#4f94ff',
+    widgetTextColor: '#ffffff',
+    popupMode: 'popup',
+    popupTemplate: 'center-top',
+    popupHeading: 'Aktifkan Notifikasi',
+    popupText: 'Aktifkan notifikasi agar tidak ketinggalan update terbaru.',
+    popupActionText: 'Aktifkan',
+    popupCancelText: 'Tutup',
+    promptStrategy: 'soft',
+    promptDelay: 1200,
+    subscribeTheme: 'default-dark',
+    customSubscribeCss: '',
+    customSubscribeHtml: ''
   }
 };
 
@@ -57,7 +71,10 @@ async function ensureDatabase() {
   db.data.subscribers ||= [];
   db.data.notifications ||= [];
   db.data.campaigns ||= [];
+  db.data.themePresets ||= [];
   db.data.refreshTokens ||= [];
+  db.data.settings ||= defaultData.settings;
+  db.data.settings = { ...defaultData.settings, ...db.data.settings };
 
   const existingAdmin = db.data.users.find((user) => user.email === ADMIN_EMAIL);
 
@@ -372,9 +389,56 @@ app.post('/api/admin/users/password', requireAuth, async (req, res) => {
   res.json({ success: true });
 });
 
+app.get('/api/settings', async (req, res) => {
+  await db.read();
+  res.json(db.data.settings || {});
+});
+
 app.get('/api/admin/settings', requireAuth, async (req, res) => {
   await db.read();
   res.json(db.data.settings || {});
+});
+
+app.get('/api/admin/settings/presets', requireAuth, async (req, res) => {
+  await db.read();
+  res.json({ presets: db.data.themePresets || [] });
+});
+
+app.post('/api/admin/settings/presets', requireAuth, async (req, res) => {
+  const { name, preset } = req.body;
+
+  if (!name || !preset) {
+    return res.status(400).json({ error: 'Nama dan preset diperlukan' });
+  }
+
+  await db.read();
+
+  const savedPreset = {
+    id: nanoid(),
+    name,
+    preset,
+    createdAt: new Date().toISOString()
+  };
+
+  db.data.themePresets.push(savedPreset);
+  await db.write();
+
+  res.json({ success: true, preset: savedPreset });
+});
+
+app.delete('/api/admin/settings/presets/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  await db.read();
+
+  const beforeCount = db.data.themePresets.length;
+  db.data.themePresets = db.data.themePresets.filter((item) => item.id !== id);
+
+  if (db.data.themePresets.length === beforeCount) {
+    return res.status(404).json({ error: 'Preset tidak ditemukan' });
+  }
+
+  await db.write();
+  res.json({ success: true });
 });
 
 app.post('/api/admin/settings', requireAuth, async (req, res) => {
