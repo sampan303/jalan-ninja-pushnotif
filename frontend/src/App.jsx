@@ -113,8 +113,9 @@ function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('utm_source') === 'widget' || params.get('subscribe') === '1') {
-      setView('subscribe');
+    if (params.get('subscribe') === '1') {
+  setView('subscribe');
+}
     }
   }, []);
 
