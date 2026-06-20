@@ -183,9 +183,10 @@ function App() {
       </header>
 
       {view === 'home' ? (
-        <HomePage />
+        <HomePage openSubscribe={() => setView('subscribe')} />
       ) : view === 'subscribe' ? (
         <SubscribePage />
+      )
       ) : view === 'users' ? (
         isLoggedIn ? <AdminUsers token={accessToken} setStatus={setStatus} /> : <p>Login required</p>
       ) : !isLoggedIn ? (
