@@ -1,0 +1,156 @@
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f4f7fb;
+  color: #1f2937;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.nav-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nav-buttons button {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-radius: 999px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+}
+
+.nav-buttons button:hover {
+  background: #e2e8f0;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 16px 0;
+}
+
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 0.95rem;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #dadee5;
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+button {
+  margin-top: 18px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1e40af;
+}
+
+.status {
+  margin-top: 14px;
+  color: #334155;
+}
+
+.admin-users {
+  display: grid;
+  gap: 24px;
+}
+
+.user-section {
+  display: grid;
+  gap: 24px;
+}
+
+.settings-form {
+  display: grid;
+  gap: 12px;
+}
+
+.password-section {
+  margin-top: 24px;
+}
+
+.subscribers-list ul,
+.admin-users ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.subscribers-list li,
+.admin-users li {
+  padding: 10px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.subscribers-list li:last-child,
+.admin-users li:last-child {
+  border-bottom: none;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.tile {
+  padding: 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.history li {
+  border-top: 1px solid #e2e8f0;
+  padding: 12px 0;
+}
+
+.history li:first-child {
+  border-top: none;
+}
+
+.history small {
+  color: #64748b;
+}
