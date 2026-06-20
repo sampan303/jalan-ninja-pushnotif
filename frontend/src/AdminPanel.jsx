@@ -3,6 +3,7 @@ import MetricCard from './components/MetricCard';
 import SidebarTab from './components/SidebarTab';
 import AdminUsers from './AdminUsers';
 import AdminSettings from './AdminSettings';
+import AdminCampaigns from './AdminCampaigns';
 
 export default function AdminPanel({ token, setStatus, summary, notifications, subscribers, sendNotification, title, setTitle, message, setMessage, url, setUrl }) {
   const [activeTab, setActiveTab] = useState('overview');
@@ -13,6 +14,7 @@ export default function AdminPanel({ token, setStatus, summary, notifications, s
         <div className="sidebar-brand">Admin Panel</div>
         <SidebarTab label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
         <SidebarTab label="Notifications" active={activeTab === 'notifications'} onClick={() => setActiveTab('notifications')} />
+        <SidebarTab label="Campaigns" active={activeTab === 'campaigns'} onClick={() => setActiveTab('campaigns')} />
         <SidebarTab label="Subscribers" active={activeTab === 'subscribers'} onClick={() => setActiveTab('subscribers')} />
         <SidebarTab label="Users" active={activeTab === 'users'} onClick={() => setActiveTab('users')} />
         <SidebarTab label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
@@ -32,6 +34,20 @@ export default function AdminPanel({ token, setStatus, summary, notifications, s
 
         {activeTab === 'overview' && (
           <>
+            <div className="card dark-card delivery-overview">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h3>Push Delivery Overview</h3>
+                  <p className="small-text">Summary of delivery readiness, audience quality, and destination performance. Technical setup details stay in Settings.</p>
+                </div>
+                <div className="hero-actions">
+                  <button type="button" className="btn-primary" onClick={() => setActiveTab('notifications')}>Send Manual</button>
+                  <button type="button" className="btn-ghost" onClick={() => setActiveTab('campaigns')}>Open Campaigns</button>
+                  <button type="button" className="btn-ghost" onClick={() => setActiveTab('settings')}>Open Settings</button>
+                </div>
+              </div>
+            </div>
+
             <div className="metrics-grid">
               <MetricCard label="Total Subscribers" value={summary.subscribers || 0} />
               <MetricCard label="Notifications Sent" value={summary.notifications || 0} />
@@ -110,6 +126,7 @@ export default function AdminPanel({ token, setStatus, summary, notifications, s
         )}
 
         {activeTab === 'users' && <AdminUsers token={token} setStatus={setStatus} />}
+        {activeTab === 'campaigns' && <AdminCampaigns token={token} />}
         {activeTab === 'settings' && <AdminSettings token={token} setStatus={setStatus} />}
       </main>
     </div>

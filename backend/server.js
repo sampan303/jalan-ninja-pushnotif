@@ -32,6 +32,7 @@ const defaultData = {
   users: [],
   subscribers: [],
   notifications: [],
+  campaigns: [],
   refreshTokens: [],
   settings: {
     siteName: 'PushNotif Admin',
@@ -55,6 +56,7 @@ async function ensureDatabase() {
   db.data.users ||= [];
   db.data.subscribers ||= [];
   db.data.notifications ||= [];
+  db.data.campaigns ||= [];
   db.data.refreshTokens ||= [];
 
   const existingAdmin = db.data.users.find((user) => user.email === ADMIN_EMAIL);
@@ -393,6 +395,88 @@ app.get('/api/admin/notifications', requireAuth, async (req, res) => {
   await db.read();
 
   res.json(db.data.notifications.slice().reverse());
+});
+
+// Campaigns CRUD
+app.get('/api/admin/campaigns', requireAuth, async (req, res) => {
+  await db.read();
+
+  res.json({ campaigns: db.data.campaigns.slice().reverse() });
+});
+
+app.post('/api/admin/campaigns', requireAuth, async (req, res) => {
+  const { title, message, sendNow } = req.body;
+
+  if (!title || !message) {
+    return res.status(400).json({ error: 'Title and message required' });
+  }
+
+  const campaign = {
+    id: nanoid(),
+    title,
+    message,
+    sendNow: !!sendNow,
+    status: sendNow ? 'sent' : 'draft',
+    sent: sendNow ? db.data.subscribers.length : 0,
+    createdAt: new Date().toISOString()
+  };
+
+  await db.read();
+  db.data.campaigns.push(campaign);
+
+  if (sendNow) {
+    // send push immediately
+    await sendPush({ title: campaign.title, body: campaign.message, url: db.data.settings?.defaultUrl || WIDGET_TARGET });
+  }
+
+  await db.write();
+
+  res.json({ success: true, campaign });
+});
+
+app.put('/api/admin/campaigns/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body || {};
+
+  await db.read();
+
+  const idx = db.data.campaigns.findIndex((c) => c.id === id);
+
+  if (idx === -1) return res.status(404).json({ error: 'Campaign not found' });
+
+  const existing = db.data.campaigns[idx];
+
+  const updated = { ...existing, ...updates, updatedAt: new Date().toISOString() };
+
+  db.data.campaigns[idx] = updated;
+
+  // If updating to sendNow and it was not sent before, trigger send
+  if (updates.sendNow && !existing.sendNow) {
+    await sendPush({ title: updated.title, body: updated.message, url: db.data.settings?.defaultUrl || WIDGET_TARGET });
+    updated.status = 'sent';
+    updated.sent = db.data.subscribers.length;
+  }
+
+  await db.write();
+
+  res.json({ success: true, campaign: updated });
+});
+
+app.delete('/api/admin/campaigns/:id', requireAuth, async (req, res) => {
+  const { id } = req.params;
+
+  await db.read();
+
+  const initial = db.data.campaigns.length;
+  db.data.campaigns = db.data.campaigns.filter((c) => c.id !== id);
+
+  const removed = initial !== db.data.campaigns.length;
+
+  await db.write();
+
+  if (!removed) return res.status(404).json({ error: 'Campaign not found' });
+
+  res.json({ success: true });
 });
 
 app.get('/api/admin/subscribers', requireAuth, async (req, res) => {
