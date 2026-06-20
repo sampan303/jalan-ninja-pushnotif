@@ -112,8 +112,7 @@ function App() {
   }, [api]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('subscribe') === '1') {
+if (params.get('subscribe') === '1') {
   setView('subscribe');
 }
     }
