@@ -1,169 +1,61 @@
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: Inter, system-ui, sans-serif;
-  background: #2f3b46;
-  color: #e5edf5;
-}
-
-.app {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-header {
-  background: #26313b;
-  border: 1px solid #43515f;
-  border-radius: 14px;
-  padding: 18px 22px;
-  margin-bottom: 24px;
-}
-
-.subheader {
-  color: #b7c3cf;
-}
-
-.nav-buttons {
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 70px;
+  background: rgba(0, 0, 0, 0.35);
 }
 
-.card {
-  background: #364450;
-  border: 1px solid #465664;
-  border-radius: 14px;
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,.18);
+.popup-box {
+  width: min(88%, 860px);
+  background: white;
+  border-radius: 10px;
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
 }
 
-button {
-  margin-top: 14px;
-  padding: 11px 16px;
-  border: 1px solid #dbe7f3;
-  border-radius: 8px;
-  background: transparent;
-  color: #fff;
+.popup-icon {
+  font-size: 48px;
+  color: #f6c400;
+}
+
+.popup-content {
+  flex: 1;
+}
+
+.popup-content h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
   font-weight: 800;
+  color: #333;
+}
+
+.popup-content p {
+  margin: 0;
+  color: #777;
+  font-size: 14px;
+}
+
+.popup-btn {
+  border: none;
+  border-radius: 5px;
+  padding: 14px 28px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-button:hover {
-  background: #4b5b69;
+.popup-btn.secondary {
+  background: #e5e7eb;
+  color: #444;
 }
 
-input,
-textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #5c6c79;
-  border-radius: 10px;
-  background: #e9eef5;
-  color: #111827;
-  font-size: 1rem;
-}
-
-label {
-  display: block;
-  margin: 12px 0 6px;
-}
-
-.summary {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.tile {
-  background: #3d4b57;
-  border: 1px solid #4f6170;
-  border-radius: 14px;
-  padding: 20px;
-}
-
-.tile span {
-  display: block;
-  color: #c7d2dc;
-  font-size: 13px;
-  text-transform: uppercase;
-}
-
-.tile strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 32px;
-}
-
-.status {
-  color: #dbeafe;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  border-top: 1px solid #4c5b68;
-  padding: 12px 0;
-}
-
-.vip-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.82);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-}
-
-/* Dashboard additional styles */
-.dashboard {
-  background: linear-gradient(180deg, #0f1724 0%, #0b1220 100%);
-  padding: 20px;
-  border-radius: 12px;
-  color: #e6eef8;
-}
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-.dashboard-actions button.btn-ghost {
-  background: rgba(255,255,255,0.04);
-  color: #cfe3ff;
-  border: 1px solid rgba(255,255,255,0.04);
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-left: 8px;
-}
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.metric-card {
-  background: rgba(255,255,255,0.03);
-  padding: 14px;
-  border-radius: 12px;
-  text-align: left;
-}
-.metric-label { color: #9fb2d6; font-size: 0.9rem; }
-.metric-value { font-size: 1.6rem; font-weight: 700; color: #ffffff; }
-
-.dashboard-main { display: flex; gap: 16px; }
-.left-col { flex: 2; display: grid; gap: 12px; }
-.right-col { flex: 1; display: grid; gap: 12px; }
-.dark-card { background: rgba(255,255,255,0.02); color: #dbeafe; padding: 16px; border-radius: 12px; }
-.send-panel input, .send-panel textarea { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); color: #e6eef8; }
-.send-panel button { background: #eab308; color: #0b1220; border-radius: 8px; padding: 10px 14px; border: none; }
-.subscribers-list ul, .subscribers li, .subscribers ul { max-height: 220px; overflow: auto; }
-
-@media (max-width: 900px) {
-  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-  .dashboard-main { flex-direction: column; }
+.popup-btn.primary {
+  background: #1683f7;
+  color: white;
 }
