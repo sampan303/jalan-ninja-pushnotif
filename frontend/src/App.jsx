@@ -3,6 +3,7 @@ import axios from 'axios';
 import HomePage from './HomePage';
 import SubscribePage from './SubscribePage';
 import AdminUsers from './AdminUsers';
+import Dashboard from './Dashboard';
 
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
@@ -30,59 +31,22 @@ function App() {
   }, []);
 
   const clearAuthTokens = useCallback(() => {
-    setAccessToken('');
-    setRefreshToken('');
-    localStorage.removeItem('pushnotif_access_token');
-    localStorage.removeItem('pushnotif_refresh_token');
-  }, []);
-
-  const refreshAccessToken = useCallback(async () => {
-    if (!refreshToken) {
-      clearAuthTokens();
-      return false;
-    }
-
-    try {
-      const response = await axios.post(`${API_BASE}/auth/refresh`, { refreshToken });
-      setAuthTokens(response.data.accessToken, response.data.refreshToken);
-      return true;
-    } catch (err) {
-      clearAuthTokens();
-      return false;
-    }
-  }, [refreshToken, clearAuthTokens, setAuthTokens]);
-
-  const api = useMemo(() => {
-    const instance = axios.create({ baseURL: API_BASE });
-
-    instance.interceptors.request.use((config) => {
-      const token = localStorage.getItem('pushnotif_access_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      return config;
-    });
-
-    instance.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          const refreshed = await refreshAccessToken();
-
-          if (refreshed) {
-            originalRequest.headers.Authorization = `Bearer ${localStorage.getItem('pushnotif_access_token')}`;
-            return instance(originalRequest);
-          }
-        }
-
-        return Promise.reject(error);
-      }
-    );
-
-    return instance;
-  }, [refreshAccessToken]);
+      ) : (
+        <Dashboard
+          summary={summary}
+          notifications={notifications}
+          subscribers={subscribers}
+          sendNotification={sendNotification}
+          title={title}
+          setTitle={setTitle}
+          message={message}
+          setMessage={setMessage}
+          url={url}
+          setUrl={setUrl}
+          status={status}
+          setStatus={setStatus}
+        />
+      )}
 
   const fetchSummary = useCallback(async () => {
     try {
