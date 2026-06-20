@@ -1,5 +1,10 @@
-self.addEventListener('push', function(event) {
-  let data = { title: 'Notifikasi', body: 'Ada pemberitahuan baru.', url: '/' };
+self.addEventListener('push', function (event) {
+  let data = {
+    title: 'Notifikasi',
+    body: 'Ada pemberitahuan baru.',
+    url: self.location.origin,
+  };
+
   if (event.data) {
     try {
       data = event.data.json();
@@ -8,31 +13,22 @@ self.addEventListener('push', function(event) {
     }
   }
 
-  const options = {
-    body: data.body,
-    icon: '/public/icon.png',
-    badge: '/public/badge.png',
-    data: { url: data.url },
-  };
-
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(data.title || 'Notifikasi', {
+      body: data.body || '',
+      icon: '/icon.png',
+      badge: '/badge.png',
+      data: {
+        url: data.url || self.location.origin,
+      },
+    })
   );
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const url = event.notification.data?.url || '/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window' }).then(function(clientList) {
-      for (const client of clientList) {
-        if (client.url === url && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
-    })
-  );
+
+  const url = event.notification.data?.url || self.location.origin;
+
+  event.waitUntil(clients.openWindow(url));
 });

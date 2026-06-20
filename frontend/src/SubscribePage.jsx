@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
+
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
+
   return outputArray;
 }
 
@@ -26,7 +28,8 @@ export default function SubscribePage() {
       return;
     }
 
-    navigator.serviceWorker.ready
+    navigator.serviceWorker
+      .register('/sw.js')
       .then((registration) => registration.pushManager.getSubscription())
       .then((subscription) => {
         if (subscription) {
@@ -34,28 +37,38 @@ export default function SubscribePage() {
           setStatus('Anda sudah terdaftar untuk notifikasi.');
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        console.error(error);
+      });
   }, []);
 
   const handleSubscribe = async () => {
     setStatus('Memproses...');
+
     try {
       const permission = await Notification.requestPermission();
+
       if (permission !== 'granted') {
         setStatus('Izin notifikasi ditolak.');
         return;
       }
 
       const registration = await navigator.serviceWorker.register('/sw.js');
+
       const vapidResponse = await axios.get(`${API_BASE}/vapid-public`);
       const publicKey = vapidResponse.data.publicKey;
 
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
-      });
+      const existingSubscription = await registration.pushManager.getSubscription();
+
+      const subscription =
+        existingSubscription ||
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        }));
 
       await axios.post(`${API_BASE}/subscribe`, subscription);
+
       setSubscribed(true);
       setStatus('Berhasil mendaftar notifikasi!');
     } catch (error) {
@@ -69,13 +82,16 @@ export default function SubscribePage() {
       <header>
         <h1>Langganan Notifikasi</h1>
       </header>
+
       <div className="card">
         <p>
           Klik tombol di bawah untuk mendaftar notifikasi browser. Setelah mendaftar, Anda akan menerima notifikasi dari admin.
         </p>
+
         <button onClick={handleSubscribe} disabled={!isSupported || subscribed}>
           {subscribed ? 'Sudah Terdaftar' : 'Daftar Notifikasi'}
         </button>
+
         <p className="status">{status}</p>
       </div>
     </div>

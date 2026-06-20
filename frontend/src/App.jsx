@@ -4,7 +4,7 @@ import HomePage from './HomePage';
 import SubscribePage from './SubscribePage';
 import AdminUsers from './AdminUsers';
 
-const API_BASE = 'http://localhost:4000/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
 
 function App() {
   const [accessToken, setAccessToken] = useState(localStorage.getItem('pushnotif_access_token') || '');
@@ -13,7 +13,7 @@ function App() {
   const [password, setPassword] = useState('admin123');
   const [title, setTitle] = useState('Halo pengguna!');
   const [message, setMessage] = useState('Ini adalah notifikasi dari admin.');
-  const [url, setUrl] = useState('http://localhost:5173');
+  const [url, setUrl] = useState(window.location.origin);
   const [status, setStatus] = useState('');
   const [summary, setSummary] = useState({ subscribers: 0, notifications: 0 });
   const [notifications, setNotifications] = useState([]);
