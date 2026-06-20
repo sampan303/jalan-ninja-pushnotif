@@ -30,7 +30,9 @@ export default function AdminSettings({ token, setStatus }) {
   const [settings, setSettings] = useState(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [showPreviewPopup, setShowPreviewPopup] = useState(false);
-    const [presets, setPresets] = useState([]);
+  const [importJson, setImportJson] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [presets, setPresets] = useState([]);
   const [newPresetName, setNewPresetName] = useState('');
 
   const sampleHtml = `<div class="promo-card">\n  <h3>Upgrade akun kamu jadi VIP</h3>\n  <p>Aktifkan notifikasi dan dapatkan info gacor lebih cepat.</p>\n  <button class="btn-primary">Aktifkan Sekarang</button>\n</div>`;
@@ -128,7 +130,9 @@ export default function AdminSettings({ token, setStatus }) {
       setSettings({ ...defaultSettings, ...settingsResponse.data });
       setLoading(false);
     } catch (err) {
-      setStatus('Gagal memuat pengaturan: ' + (err.response?.data?.error || err.message));
+      const message = err.response?.data?.error || err.message || 'Terjadi kesalahan saat memuat pengaturan.';
+      setErrorMessage(message);
+      setStatus('Gagal memuat pengaturan: ' + message);
       setLoading(false);
     }
   };
@@ -209,6 +213,11 @@ export default function AdminSettings({ token, setStatus }) {
 
   return (
     <div className="card admin-settings">
+      {errorMessage && (
+        <div className="error-banner">
+          <p>{errorMessage}</p>
+        </div>
+      )}
       <div className="section-header">
         <div>
           <h2>Pengaturan Panel</h2>

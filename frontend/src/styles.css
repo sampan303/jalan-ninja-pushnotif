@@ -498,6 +498,15 @@ label {
   align-items: center;
 }
 
+.error-banner {
+  background: rgba(255, 95, 109, 0.12);
+  border: 1px solid rgba(255, 95, 109, 0.24);
+  color: #ffb3bd;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+
 .preset-list {
   margin: 18px 0 0;
   display: grid;
