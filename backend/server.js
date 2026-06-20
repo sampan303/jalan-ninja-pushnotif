@@ -32,7 +32,17 @@ const defaultData = {
   users: [],
   subscribers: [],
   notifications: [],
-  refreshTokens: []
+  refreshTokens: [],
+  settings: {
+    siteName: 'PushNotif Admin',
+    widgetTitle: 'Langganan Notifikasi',
+    widgetButton: 'Berlangganan',
+    popupText: 'Aktifkan notifikasi agar tidak ketinggalan update terbaru.',
+    defaultUrl: WIDGET_TARGET,
+    enableWidget: true,
+    allowedOrigins: '*',
+    widgetPosition: 'bottom-right'
+  }
 };
 
 const adapter = new JSONFile(DB_PATH);
@@ -358,6 +368,25 @@ app.post('/api/admin/users/password', requireAuth, async (req, res) => {
   await db.write();
 
   res.json({ success: true });
+});
+
+app.get('/api/admin/settings', requireAuth, async (req, res) => {
+  await db.read();
+  res.json(db.data.settings || {});
+});
+
+app.post('/api/admin/settings', requireAuth, async (req, res) => {
+  const updates = req.body;
+  await db.read();
+
+  db.data.settings = {
+    ...db.data.settings,
+    ...updates
+  };
+
+  await db.write();
+
+  res.json({ success: true, settings: db.data.settings });
 });
 
 app.get('/api/admin/notifications', requireAuth, async (req, res) => {
