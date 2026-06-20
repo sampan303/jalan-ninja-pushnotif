@@ -93,6 +93,7 @@ export default function AdminUsers({ token, setStatus }) {
           </form>
         </div>
       </div>
+
       <div className="password-section">
         <h3>Ubah Password Saya</h3>
         <form onSubmit={changePassword} className="settings-form">
