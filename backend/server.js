@@ -583,26 +583,232 @@ app.post('/api/admin/notifications', requireAuth, async (req, res) => {
 app.get('/widget.js', (req, res) => {
   const script = `
 (function() {
-  function createWidget() {
-    const button = document.createElement('button');
-    button.textContent = document.currentScript?.dataset.widgetTitle || 'Langganan Notifikasi';
-    button.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:12px 18px;background:#2f80ed;color:#fff;border:none;border-radius:24px;cursor:pointer;box-shadow:0 8px 20px rgba(0,0,0,0.12);z-index:999999;';
-    button.onclick = function() {
-      window.open('${WIDGET_TARGET}/?utm_source=widget', '_blank');
+  function safeLocalStorage(key, value) {
+    try {
+      if (value === undefined) {
+        return window.localStorage.getItem(key);
+      }
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function createWidgetIframe(apiOrigin, appId) {
+    const container = document.createElement('div');
+    const frame = document.createElement('iframe');
+    const closeButton = document.createElement('button');
+    const iframeUrl = apiOrigin + '/widget-frame?appId=' + encodeURIComponent(appId);
+
+    container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;pointer-events:none;';
+    frame.src = iframeUrl;
+    frame.style.cssText = 'width:340px;height:280px;border:0;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,0.25);pointer-events:auto;';
+    frame.setAttribute('allow', 'notifications');
+
+    closeButton.textContent = '×';
+    closeButton.style.cssText = 'position:absolute;top:10px;right:10px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(0,0,0,0.38);color:white;font-size:18px;cursor:pointer;pointer-events:auto;';
+    closeButton.onclick = function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      container.remove();
+      safeLocalStorage('push-widget-status-' + appId, 'dismissed');
     };
-    document.body.appendChild(button);
+
+    container.appendChild(frame);
+    container.appendChild(closeButton);
+    document.body.appendChild(container);
+
+    window.addEventListener('message', function(event) {
+      if (event.origin !== apiOrigin) return;
+      if (!event.data || event.data.type !== 'push-widget-status') return;
+      const status = event.data.status;
+      if (status) {
+        safeLocalStorage('push-widget-status-' + appId, status);
+      }
+      if (status === 'subscribed' || status === 'denied' || status === 'dismissed' || status === 'disabled') {
+        container.remove();
+      }
+    });
+  }
+
+  function init() {
+    if (!window.document || !window.document.body) return;
+    const currentScript = document.currentScript || document.getElementsByTagName('script')[document.getElementsByTagName('script').length - 1];
+    const appId = currentScript?.dataset.appId || 'default';
+    const apiAttr = currentScript?.dataset.api;
+    const scriptSrc = currentScript?.src || '';
+    const apiOrigin = apiAttr ? new URL(apiAttr, scriptSrc).origin : new URL(scriptSrc).origin;
+    const status = safeLocalStorage('push-widget-status-' + appId);
+
+    if (status === 'subscribed' || status === 'denied' || status === 'dismissed') {
+      return;
+    }
+
+    createWidgetIframe(apiOrigin, appId);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', createWidget);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    createWidget();
+    init();
   }
 })();
 `;
 
   res.set('Content-Type', 'application/javascript');
   res.send(script);
+});
+
+app.get('/widget-frame', (req, res) => {
+  const appId = (req.query.appId || 'default').replace(/[^a-zA-Z0-9-_]/g, '');
+  const html = `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Push Widget</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .widget-shell { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent; }
+    .widget-card { width: 100%; max-width: 340px; padding: 20px; border-radius: 20px; background: #0f172a; color: #eef2ff; box-sizing: border-box; box-shadow: 0 24px 80px rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); }
+    .widget-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .widget-badge { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #4f94ff, #2f80ed); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .widget-title { margin: 0; font-size: 1rem; line-height: 1.3; }
+    .widget-text { margin: 12px 0 18px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; }
+    .widget-buttons { display: grid; gap: 10px; }
+    .widget-button { width: 100%; border: 0; border-radius: 14px; padding: 14px 16px; cursor: pointer; font-weight: 700; font-size: 0.98rem; }
+    .widget-button.primary { background: #4f94ff; color: #fff; }
+    .widget-button.secondary { background: rgba(255,255,255,0.08); color: #f8fafc; }
+    .widget-status { margin-top: 14px; font-size: 0.9rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="widget-shell">
+    <div class="widget-card" role="dialog" aria-label="Aktifkan notifikasi">
+      <div class="widget-header">
+        <div class="widget-badge">🔔</div>
+        <div>
+          <h1 class="widget-title">Aktifkan Notifikasi</h1>
+          <p class="widget-text">Dapatkan update terbaru langsung di browser Anda jika mengizinkan notifikasi.</p>
+        </div>
+      </div>
+      <div class="widget-buttons">
+        <button id="enableButton" class="widget-button primary">Aktifkan Notifikasi</button>
+        <button id="laterButton" class="widget-button secondary">Nanti</button>
+      </div>
+      <div id="statusMessage" class="widget-status" aria-live="polite"></div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var appId = '${appId}';
+      var storageKey = 'push-widget-status-' + appId;
+      var statusMessage = document.getElementById('statusMessage');
+      var enableButton = document.getElementById('enableButton');
+      var laterButton = document.getElementById('laterButton');
+      var apiOrigin = location.origin;
+      var setStatus = function(value, message) {
+        try { window.localStorage.setItem(storageKey, value); } catch (err) {}
+        if (message) { statusMessage.textContent = message; }
+        try {
+          window.parent.postMessage({ type: 'push-widget-status', status: value, message: message }, apiOrigin);
+        } catch (err) {}
+      };
+
+      function showMessage(text) {
+        statusMessage.textContent = text;
+      }
+
+      function arrayBufferToBase64(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var rawData = window.atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
+
+      function getSavedStatus() {
+        try { return window.localStorage.getItem(storageKey); } catch (err) { return null; }
+      }
+
+      function disableWidget(reason) {
+        setStatus('disabled', reason || 'Fitur notifikasi tidak tersedia.');
+        enableButton.disabled = true;
+        laterButton.disabled = false;
+      }
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || !('fetch' in window)) {
+        disableWidget('Browser tidak mendukung notifikasi push.');
+        return;
+      }
+
+      var saved = getSavedStatus();
+      if (saved === 'subscribed' || saved === 'denied' || saved === 'disabled') {
+        disableWidget('Notifikasi sudah diatur.');
+        return;
+      }
+
+      laterButton.addEventListener('click', function() {
+        setStatus('dismissed', 'Ditunda untuk nanti.');
+        showMessage('Kamu bisa mengaktifkan notifikasi kapan saja.');
+      });
+
+      enableButton.addEventListener('click', async function() {
+        enableButton.disabled = true;
+        showMessage('Memproses izin notifikasi...');
+
+        try {
+          var permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            setStatus('denied', 'Notifikasi tidak diaktifkan.');
+            return;
+          }
+        } catch (err) {
+          disableWidget('Permintaan izin dibatalkan.');
+          return;
+        }
+
+        try {
+          var registration = await navigator.serviceWorker.register('/sw.js');
+        } catch (err) {
+          disableWidget('Gagal mendaftarkan service worker.');
+          return;
+        }
+
+        try {
+          var vapidResp = await fetch('/api/vapid-public');
+          var vapidData = await vapidResp.json();
+          var applicationServerKey = arrayBufferToBase64(vapidData.publicKey);
+          var subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+          });
+
+          await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+          });
+
+          setStatus('subscribed', 'Notifikasi berhasil diaktifkan.');
+          enableButton.textContent = 'Berhasil!';
+          enableButton.style.background = '#22c55e';
+          laterButton.disabled = true;
+        } catch (err) {
+          console.error(err);
+          disableWidget('Gagal mengaktifkan notifikasi.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>`;
+  res.set('Content-Type', 'text/html');
+  res.send(html);
 });
 
 app.get('/api/widget-info', (req, res) => {
