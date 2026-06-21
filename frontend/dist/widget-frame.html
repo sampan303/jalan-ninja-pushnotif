@@ -31,8 +31,8 @@
         </div>
       </div>
       <div class="widget-buttons">
-        <button id="enableButton" class="widget-button primary">Aktifkan Notifikasi</button>
-        <button id="laterButton" class="widget-button secondary">Nanti</button>
+        <button id="enableBtn" class="widget-button primary">Aktifkan Notifikasi</button>
+        <button id="closeBtn" class="widget-button secondary">Nanti</button>
       </div>
       <div id="statusMessage" class="widget-status" aria-live="polite"></div>
     </div>
@@ -93,19 +93,19 @@
       var appId = getQueryParam('appId') || 'default';
       var apiOrigin = getQueryParam('api') || window.location.origin;
       var storageKey = 'push-widget-status-' + appId;
-      var enableButton = document.getElementById('enableButton');
-      var laterButton = document.getElementById('laterButton');
-      var statusMessage = document.getElementById('statusMessage');
       var popupTitleEl = document.querySelector('.widget-title');
       var widgetTextEl = document.querySelector('.widget-text');
       var customHtmlContainer = document.getElementById('customSubscribeHtmlContainer');
+      var statusMessage = document.getElementById('statusMessage');
+      var enableButton = document.getElementById('enableBtn');
+      var closeButton = document.getElementById('closeBtn');
       var customCssStyle = document.createElement('style');
       document.head.appendChild(customCssStyle);
 
       function applyWidgetInfo(info) {
         popupTitleEl.textContent = info.popupTitle || defaultWidgetInfo.popupTitle;
-        enableButton.textContent = info.popupButtonAktifkan || defaultWidgetInfo.popupButtonAktifkan;
-        laterButton.textContent = info.popupButtonTutup || defaultWidgetInfo.popupButtonTutup;
+        if (enableButton) enableButton.textContent = info.popupButtonAktifkan || defaultWidgetInfo.popupButtonAktifkan;
+        if (closeButton) closeButton.textContent = info.popupButtonTutup || defaultWidgetInfo.popupButtonTutup;
         widgetTextEl.textContent = info.popupText || defaultWidgetInfo.popupText;
 
         if (info.customSubscribeCss) {
@@ -135,22 +135,65 @@
         }
       }
 
-      applyWidgetInfo(defaultWidgetInfo);
-      loadWidgetInfo();
-
-      function disableWidget(reason) {
-        enableButton.disabled = true;
-        laterButton.disabled = false;
-        postStatus('disabled', reason || 'Fitur notifikasi tidak tersedia.');
-      }
-
       function showMessage(text) {
         if (statusMessage) {
           statusMessage.textContent = text;
         }
       }
 
-      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || !('fetch' in window)) {
+      function attachButtonHandlers() {
+        if (!enableButton || !closeButton) {
+          console.warn('Widget buttons not found');
+          return;
+        }
+
+        enableButton.disabled = false;
+        closeButton.disabled = false;
+
+        closeButton.addEventListener('click', function() {
+          console.log('close clicked');
+          window.parent.postMessage({ type: 'push-widget-status', status: 'dismissed' }, '*');
+          console.log('message sent');
+          showMessage('Notifikasi ditunda.');
+        });
+
+        enableButton.addEventListener('click', async function() {
+          console.log('enable clicked');
+          showMessage('Memproses izin notifikasi...');
+
+          try {
+            var permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              postStatus('subscribed', 'Notifikasi berhasil diaktifkan.');
+              console.log('message sent');
+              return;
+            }
+            postStatus('denied', 'Notifikasi tidak diaktifkan.');
+            console.log('message sent');
+          } catch (err) {
+            postStatus('error', 'Terjadi kesalahan saat meminta izin.');
+            console.log('message sent');
+          }
+        });
+      }
+
+      function disableWidget(reason) {
+        postStatus('disabled', reason || 'Fitur notifikasi tidak tersedia.');
+      }
+
+      function isBrowserSupported() {
+        return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window) && ('fetch' in window);
+      }
+
+      applyWidgetInfo(defaultWidgetInfo);
+      loadWidgetInfo();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', attachButtonHandlers);
+      } else {
+        attachButtonHandlers();
+      }
+
+      if (!isBrowserSupported()) {
         disableWidget('Browser tidak mendukung notifikasi push.');
         return;
       }
@@ -160,52 +203,6 @@
         disableWidget('Notifikasi sudah diatur.');
         return;
       }
-
-      laterButton.addEventListener('click', function() {
-        postStatus('dismissed', 'Ditunda untuk nanti.');
-        showMessage('Kamu bisa mengaktifkan notifikasi kapan saja.');
-      });
-
-      enableButton.addEventListener('click', async function() {
-        console.log('enable clicked');
-        enableButton.disabled = true;
-        showMessage('Memproses izin notifikasi...');
-
-        try {
-          var permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            postStatus('denied', 'Notifikasi tidak diaktifkan.');
-            return;
-          }
-        } catch (err) {
-          postStatus('denied', 'Permintaan izin dibatalkan.');
-          return;
-        }
-
-        try {
-          var registration = await navigator.serviceWorker.register('/sw.js');
-          var vapidResp = await fetch(apiOrigin + '/api/vapid-public');
-          var vapidData = await vapidResp.json();
-          var applicationServerKey = arrayBufferToBase64(vapidData.publicKey);
-          var subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: applicationServerKey
-          });
-
-          await fetch(apiOrigin + '/api/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
-          });
-
-          postStatus('subscribed', 'Notifikasi berhasil diaktifkan.');
-          enableButton.textContent = 'Berhasil!';
-          enableButton.style.background = '#22c55e';
-          laterButton.disabled = true;
-        } catch (err) {
-          disableWidget('Gagal mengaktifkan notifikasi.');
-        }
-      });
     })();
   </script>
 </body>
