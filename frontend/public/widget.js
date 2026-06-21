@@ -89,18 +89,42 @@
       return;
     }
 
-    var popupPosition = 'bottom-right';
+    var position = 'bottom-right';
     try {
       var widgetInfoResp = await fetch(apiOrigin + '/api/widget-info?appId=' + encodeURIComponent(appId));
       if (widgetInfoResp.ok) {
         var widgetInfo = await widgetInfoResp.json();
-        popupPosition = widgetInfo.popupPosition || popupPosition;
+        console.log('widget config', widgetInfo);
+        var raw = widgetInfo.widgetPosition || widgetInfo.popupPosition || '';
+        function normalizePosition(val) {
+          if (!val) return null;
+          val = String(val).trim().toLowerCase();
+          var map = {
+            'atas tengah': 'top-center',
+            'atas kanan': 'top-right',
+            'atas kiri': 'top-left',
+            'tengah layar': 'center',
+            'bawah kanan': 'bottom-right',
+            'bawah kiri': 'bottom-left',
+            'bawah tengah': 'bottom-center',
+            'top center': 'top-center',
+            'bottom center': 'bottom-center'
+          };
+          if (map[val]) return map[val];
+          val = val.replace(/\s+/g, '-');
+          if (['top-center','top-right','top-left','center','bottom-right','bottom-left','bottom-center'].indexOf(val) !== -1) return val;
+          return null;
+        }
+
+        var normalized = normalizePosition(raw) || normalizePosition(widgetInfo.popupPosition) || normalizePosition(widgetInfo.widgetPosition);
+        if (normalized) position = normalized;
+        console.log('widget position', position);
       }
     } catch (err) {
       console.warn('Unable to load widget popup position:', err);
     }
 
-    createWidgetContainer(apiOrigin, appId, popupPosition);
+    createWidgetContainer(apiOrigin, appId, position);
   }
 
   if (document.readyState === 'loading') {

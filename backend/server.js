@@ -745,23 +745,23 @@ app.get('/api/widget-info', async (req, res) => {
 
   const settings = db.data.settings || defaultData.settings;
 
-  res.json({
-    appId,
-    scriptUrl: `${req.protocol}://${req.get('host')}/widget.js`,
-    widgetPosition: settings.widgetPosition || settings.popupPosition || 'bottom-right',
-    popupLogoUrl: settings.popupLogoUrl || '',
-    popupImageUrl: settings.popupImageUrl || '',
-    popupIconUrl: settings.popupIconUrl || '',
-    popupWidth: settings.popupWidth || '360px',
-    popupHeight: settings.popupHeight || '320px',
-    popupBorderRadius: settings.popupBorderRadius || '20px',
-    popupBackgroundColor: settings.popupBackgroundColor || '#0f172a',
-    popupTextColor: settings.popupTextColor || '#eef2ff',
-    popupTitle: settings.popupHeading || settings.widgetTitle || 'Aktifkan Notifikasi',
-    popupButtonAktifkan: settings.popupActionText || 'Aktifkan Notifikasi',
-    popupButtonTutup: settings.popupCancelText || 'Tutup',
-    customSubscribeHtml: settings.customSubscribeHtml || '',
-    customSubscribeCss: settings.customSubscribeCss || ''
+    res.json({
+      appId,
+      scriptUrl: `${req.protocol}://${req.get('host')}/widget.js?v=2`,
+      widgetPosition: settings.widgetPosition || settings.popupPosition || 'bottom-right',
+      popupLogoUrl: settings.popupLogoUrl || '',
+      popupImageUrl: settings.popupImageUrl || '',
+      popupIconUrl: settings.popupIconUrl || '',
+      popupWidth: settings.popupWidth || '360px',
+      popupHeight: settings.popupHeight || '320px',
+      popupBorderRadius: settings.popupBorderRadius || '20px',
+      popupBackgroundColor: settings.popupBackgroundColor || '#0f172a',
+      popupTextColor: settings.popupTextColor || '#eef2ff',
+      popupTitle: settings.popupHeading || settings.widgetTitle || 'Aktifkan Notifikasi',
+      popupButtonAktifkan: settings.popupActionText || 'Aktifkan Notifikasi',
+      popupButtonTutup: settings.popupCancelText || 'Tutup',
+      customSubscribeHtml: settings.customSubscribeHtml || '',
+      customSubscribeCss: settings.customSubscribeCss || ''
   });
 });
 
