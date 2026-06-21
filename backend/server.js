@@ -739,6 +739,7 @@ app.get('/api/widget-info', async (req, res) => {
   res.json({
     appId,
     scriptUrl: `${req.protocol}://${req.get('host')}/widget.js`,
+    widgetPosition: settings.widgetPosition || 'bottom-right',
     popupTitle: settings.popupHeading || settings.widgetTitle || 'Aktifkan Notifikasi',
     popupButtonAktifkan: settings.popupActionText || 'Aktifkan Notifikasi',
     popupButtonTutup: settings.popupCancelText || 'Tutup',

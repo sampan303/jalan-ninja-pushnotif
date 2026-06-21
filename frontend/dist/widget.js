@@ -28,12 +28,29 @@
     }
   }
 
-  function createWidgetContainer(apiOrigin, appId) {
+  function getContainerStyle(position) {
+    var base = 'position:fixed;z-index:2147483647;pointer-events:none;max-width:360px;width:100%;height:320px;';
+    switch (position) {
+      case 'bottom-left':
+        return base + 'bottom:20px;left:20px;';
+      case 'top-left':
+        return base + 'top:20px;left:20px;';
+      case 'top-right':
+        return base + 'top:20px;right:20px;';
+      case 'top-center':
+        return base + 'top:20px;left:50%;transform:translateX(-50%);width:auto;min-width:320px;max-width:420px;';
+      case 'bottom-right':
+      default:
+        return base + 'bottom:20px;right:20px;';
+    }
+  }
+
+  function createWidgetContainer(apiOrigin, appId, widgetPosition) {
     var container = document.createElement('div');
     var iframe = document.createElement('iframe');
     var iframeUrl = apiOrigin + '/widget-frame.html?appId=' + encodeURIComponent(appId) + '&api=' + encodeURIComponent(apiOrigin);
 
-    container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;pointer-events:none;max-width:360px;width:100%;height:320px;';
+    container.style.cssText = getContainerStyle(widgetPosition);
     iframe.style.cssText = 'width:100%;height:100%;border:0;border-radius:20px;overflow:hidden;pointer-events:auto;';
     iframe.src = iframeUrl;
     iframe.title = 'Push notification widget';
@@ -55,7 +72,7 @@
     });
   }
 
-  function init() {
+  async function init() {
     if (!document || !document.body) return;
     var currentScript = getCurrentScript();
     var appId = (currentScript && currentScript.dataset.appId) ? currentScript.dataset.appId : 'default';
@@ -68,7 +85,18 @@
       return;
     }
 
-    createWidgetContainer(apiOrigin, appId);
+    var widgetPosition = 'bottom-right';
+    try {
+      var widgetInfoResp = await fetch(apiOrigin + '/api/widget-info?appId=' + encodeURIComponent(appId));
+      if (widgetInfoResp.ok) {
+        var widgetInfo = await widgetInfoResp.json();
+        widgetPosition = widgetInfo.widgetPosition || widgetPosition;
+      }
+    } catch (err) {
+      console.warn('Unable to load widget position:', err);
+    }
+
+    createWidgetContainer(apiOrigin, appId, widgetPosition);
   }
 
   if (document.readyState === 'loading') {

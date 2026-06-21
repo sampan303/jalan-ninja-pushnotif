@@ -272,6 +272,7 @@ export default function AdminSettings({ token, setStatus }) {
         >
           <option value="bottom-right">Bawah Kanan</option>
           <option value="bottom-left">Bawah Kiri</option>
+          <option value="top-center">Atas Tengah</option>
           <option value="top-right">Atas Kanan</option>
           <option value="top-left">Atas Kiri</option>
         </select>
