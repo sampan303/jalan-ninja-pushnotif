@@ -1,15 +1,15 @@
 import React from 'react';
 import MetricCard from './components/MetricCard';
 
-export default function Dashboard({ summary, notifications, subscribers, sendNotification, title, setTitle, message, setMessage, url, setUrl, status }) {
+export default function Dashboard({ summary, notifications, subscribers, sendNotification, title, setTitle, message, setMessage, url, setUrl, status, setActiveTab }) {
   return (
     <div className="dashboard">
       <div className="dashboard-header">
         <h2>Push Notifications — Overview</h2>
         <div className="dashboard-actions">
-          <button className="btn-ghost">Send Manual</button>
-          <button className="btn-ghost">Open Campaigns</button>
-          <button className="btn-ghost">Open Settings</button>
+          <button className="btn-ghost" type="button" onClick={() => setActiveTab ? setActiveTab('notifications') : null}>Send Manual</button>
+          <button className="btn-ghost" type="button" onClick={() => setActiveTab ? setActiveTab('campaigns') : null}>Open Campaigns</button>
+          <button className="btn-ghost" type="button" onClick={() => setActiveTab ? setActiveTab('settings') : null}>Open Settings</button>
         </div>
       </div>
 

@@ -58,15 +58,33 @@ export default function AdminPanel({ token, setStatus, summary, notifications, s
             <div className="card dark-card overview-panel">
               <h3>Ringkasan Menu</h3>
               <div className="overview-grid">
-                <div className="overview-item">
+                <div
+                  className="overview-item clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setActiveTab('notifications')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveTab('notifications'); }}
+                >
                   <h4>Kirim Notifikasi</h4>
                   <p>Tambahkan notifikasi push otomatis atau manual ke semua subscriber.</p>
                 </div>
-                <div className="overview-item">
+                <div
+                  className="overview-item clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setActiveTab('subscribers')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveTab('subscribers'); }}
+                >
                   <h4>Kelola Subscriber</h4>
                   <p>Lihat daftarnya, bersihkan endpoint lama, dan pantau adopsi.</p>
                 </div>
-                <div className="overview-item">
+                <div
+                  className="overview-item clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setActiveTab('settings')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveTab('settings'); }}
+                >
                   <h4>Pengaturan Widget</h4>
                   <p>Ubah teks widget, posisi popup, dan URL default dari panel ini.</p>
                 </div>

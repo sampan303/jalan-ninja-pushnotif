@@ -399,6 +399,17 @@ label {
   padding: 20px;
 }
 
+.overview-item.clickable {
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.overview-item.clickable:hover {
+  transform: translateY(-4px);
+  background: rgba(79, 149, 255, 0.05);
+  border-color: rgba(79, 149, 255, 0.16);
+}
+
 .overview-panel {
   padding: 20px;
 }
