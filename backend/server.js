@@ -27,6 +27,7 @@ app.use(cors({ origin: true }));
 app.use(bodyParser.json());
 app.use('/sw.js', express.static(path.join(__dirname, 'public', 'sw.js')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '../frontend/public')));
 
 const defaultData = {
   users: [],
@@ -589,6 +590,7 @@ app.post('/api/admin/notifications', requireAuth, async (req, res) => {
   });
 });
 
+app.get('/widget-frame.html', (req, res) => {
   const appId = (req.query.appId || 'default').replace(/[^a-zA-Z0-9-_]/g, '');
   const html = `<!DOCTYPE html>
 <html lang="id">
