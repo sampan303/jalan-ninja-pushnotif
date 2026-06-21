@@ -730,9 +730,20 @@ app.post('/api/admin/notifications', requireAuth, async (req, res) => {
   res.send(html);
 });
 
-app.get('/api/widget-info', (req, res) => {
+app.get('/api/widget-info', async (req, res) => {
+  const appId = req.query.appId || 'default';
+  await db.read();
+
+  const settings = db.data.settings || defaultData.settings;
+
   res.json({
-    scriptUrl: `${req.protocol}://${req.get('host')}/widget.js`
+    appId,
+    scriptUrl: `${req.protocol}://${req.get('host')}/widget.js`,
+    popupTitle: settings.popupHeading || settings.widgetTitle || 'Aktifkan Notifikasi',
+    popupButtonAktifkan: settings.popupActionText || 'Aktifkan Notifikasi',
+    popupButtonTutup: settings.popupCancelText || 'Tutup',
+    customSubscribeHtml: settings.customSubscribeHtml || '',
+    customSubscribeCss: settings.customSubscribeCss || ''
   });
 });
 

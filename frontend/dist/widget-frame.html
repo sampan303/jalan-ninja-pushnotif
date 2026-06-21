@@ -17,6 +17,7 @@
     .widget-button.primary { background: #4f94ff; color: #fff; }
     .widget-button.secondary { background: rgba(255,255,255,0.08); color: #f8fafc; }
     .widget-status { margin-top: 14px; font-size: 0.9rem; color: #94a3b8; }
+    .custom-subscribe-html { width: 100%; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -36,6 +37,7 @@
       <div id="statusMessage" class="widget-status" aria-live="polite"></div>
     </div>
   </div>
+  <div id="customSubscribeHtmlContainer" class="custom-subscribe-html"></div>
   <script>
     (function() {
       console.log('widget-frame loaded');
@@ -79,12 +81,62 @@
         }
       }
 
+      var defaultWidgetInfo = {
+        popupTitle: 'Aktifkan Notifikasi',
+        popupButtonAktifkan: 'Aktifkan Notifikasi',
+        popupButtonTutup: 'Nanti',
+        popupText: 'Dapatkan update terbaru langsung di browser Anda jika mengizinkan notifikasi.',
+        customSubscribeHtml: '',
+        customSubscribeCss: ''
+      };
+
       var appId = getQueryParam('appId') || 'default';
       var apiOrigin = getQueryParam('api') || window.location.origin;
       var storageKey = 'push-widget-status-' + appId;
       var enableButton = document.getElementById('enableButton');
       var laterButton = document.getElementById('laterButton');
       var statusMessage = document.getElementById('statusMessage');
+      var popupTitleEl = document.querySelector('.widget-title');
+      var widgetTextEl = document.querySelector('.widget-text');
+      var customHtmlContainer = document.getElementById('customSubscribeHtmlContainer');
+      var customCssStyle = document.createElement('style');
+      document.head.appendChild(customCssStyle);
+
+      function applyWidgetInfo(info) {
+        popupTitleEl.textContent = info.popupTitle || defaultWidgetInfo.popupTitle;
+        enableButton.textContent = info.popupButtonAktifkan || defaultWidgetInfo.popupButtonAktifkan;
+        laterButton.textContent = info.popupButtonTutup || defaultWidgetInfo.popupButtonTutup;
+        widgetTextEl.textContent = info.popupText || defaultWidgetInfo.popupText;
+
+        if (info.customSubscribeCss) {
+          customCssStyle.textContent = info.customSubscribeCss;
+        }
+
+        if (info.customSubscribeHtml) {
+          customHtmlContainer.innerHTML = info.customSubscribeHtml;
+        } else {
+          customHtmlContainer.innerHTML = '';
+        }
+      }
+
+      async function loadWidgetInfo() {
+        var widgetInfoUrl = apiOrigin + '/api/widget-info?appId=' + encodeURIComponent(appId);
+        try {
+          var response = await fetch(widgetInfoUrl);
+          if (!response.ok) {
+            console.warn('widget-info fetch failed', response.status);
+            return;
+          }
+
+          var widgetInfo = await response.json();
+          applyWidgetInfo(widgetInfo);
+        } catch (error) {
+          console.warn('widget-info fetch error', error);
+        }
+      }
+
+      applyWidgetInfo(defaultWidgetInfo);
+      loadWidgetInfo();
 
       function disableWidget(reason) {
         enableButton.disabled = true;
@@ -126,7 +178,7 @@
             return;
           }
         } catch (err) {
-          disableWidget('Permintaan izin dibatalkan.');
+          postStatus('denied', 'Permintaan izin dibatalkan.');
           return;
         }
 
