@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Push Widget</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: transparent; }
+    .widget-shell { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent; }
+    .widget-card { width: 100%; max-width: 360px; padding: 20px; border-radius: 20px; background: #0f172a; color: #eef2ff; box-sizing: border-box; box-shadow: 0 24px 80px rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); }
+    .widget-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .widget-badge { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #4f94ff, #2f80ed); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .widget-title { margin: 0; font-size: 1rem; line-height: 1.3; }
+    .widget-text { margin: 12px 0 18px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; }
+    .widget-buttons { display: grid; gap: 10px; }
+    .widget-button { width: 100%; border: 0; border-radius: 14px; padding: 14px 16px; cursor: pointer; font-weight: 700; font-size: 0.98rem; }
+    .widget-button.primary { background: #4f94ff; color: #fff; }
+    .widget-button.secondary { background: rgba(255,255,255,0.08); color: #f8fafc; }
+    .widget-status { margin-top: 14px; font-size: 0.9rem; color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="widget-shell">
+    <div class="widget-card" role="dialog" aria-label="Aktifkan notifikasi">
+      <div class="widget-header">
+        <div class="widget-badge">🔔</div>
+        <div>
+          <h1 class="widget-title">Aktifkan Notifikasi</h1>
+          <p class="widget-text">Dapatkan update terbaru langsung di browser Anda jika mengizinkan notifikasi.</p>
+        </div>
+      </div>
+      <div class="widget-buttons">
+        <button id="enableButton" class="widget-button primary">Aktifkan Notifikasi</button>
+        <button id="laterButton" class="widget-button secondary">Nanti</button>
+      </div>
+      <div id="statusMessage" class="widget-status" aria-live="polite"></div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      function safeLocalStorage(key, value) {
+        try {
+          if (value === undefined) {
+            return window.localStorage.getItem(key);
+          }
+          window.localStorage.setItem(key, value);
+          return true;
+        } catch (error) {
+          return null;
+        }
+      }
+
+      function getQueryParam(name) {
+        var match = window.location.search.match(new RegExp('[?&]' + name + '=([^&]+)'));
+        return match ? decodeURIComponent(match[1]) : null;
+      }
+
+      function arrayBufferToBase64(base64String) {
+        var padding = '='.repeat((4 - base64String.length % 4) % 4);
+        var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        var rawData = window.atob(base64);
+        var outputArray = new Uint8Array(rawData.length);
+        for (var i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+      }
+
+      function postStatus(status, message) {
+        try {
+          window.parent.postMessage({ type: 'push-widget-status', status: status, message: message }, apiOrigin);
+        } catch (err) {}
+        try {
+          safeLocalStorage(storageKey, status);
+        } catch (err) {}
+        if (message) {
+          statusMessage.textContent = message;
+        }
+      }
+
+      var appId = getQueryParam('appId') || 'default';
+      var apiOrigin = getQueryParam('api') || window.location.origin;
+      var storageKey = 'push-widget-status-' + appId;
+      var enableButton = document.getElementById('enableButton');
+      var laterButton = document.getElementById('laterButton');
+      var statusMessage = document.getElementById('statusMessage');
+
+      function disableWidget(reason) {
+        enableButton.disabled = true;
+        laterButton.disabled = false;
+        postStatus('disabled', reason || 'Fitur notifikasi tidak tersedia.');
+      }
+
+      function showMessage(text) {
+        if (statusMessage) {
+          statusMessage.textContent = text;
+        }
+      }
+
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window) || !('fetch' in window)) {
+        disableWidget('Browser tidak mendukung notifikasi push.');
+        return;
+      }
+
+      var savedStatus = safeLocalStorage(storageKey);
+      if (savedStatus === 'subscribed' || savedStatus === 'denied' || savedStatus === 'dismissed' || savedStatus === 'disabled') {
+        disableWidget('Notifikasi sudah diatur.');
+        return;
+      }
+
+      laterButton.addEventListener('click', function() {
+        postStatus('dismissed', 'Ditunda untuk nanti.');
+        showMessage('Kamu bisa mengaktifkan notifikasi kapan saja.');
+      });
+
+      enableButton.addEventListener('click', async function() {
+        enableButton.disabled = true;
+        showMessage('Memproses izin notifikasi...');
+
+        try {
+          var permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            postStatus('denied', 'Notifikasi tidak diaktifkan.');
+            return;
+          }
+        } catch (err) {
+          disableWidget('Permintaan izin dibatalkan.');
+          return;
+        }
+
+        try {
+          var registration = await navigator.serviceWorker.register('/sw.js');
+          var vapidResp = await fetch(apiOrigin + '/api/vapid-public');
+          var vapidData = await vapidResp.json();
+          var applicationServerKey = arrayBufferToBase64(vapidData.publicKey);
+          var subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+          });
+
+          await fetch(apiOrigin + '/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+          });
+
+          postStatus('subscribed', 'Notifikasi berhasil diaktifkan.');
+          enableButton.textContent = 'Berhasil!';
+          enableButton.style.background = '#22c55e';
+          laterButton.disabled = true;
+        } catch (err) {
+          disableWidget('Gagal mengaktifkan notifikasi.');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

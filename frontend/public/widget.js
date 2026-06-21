@@ -34,6 +34,7 @@
     var iframeUrl = apiOrigin + '/widget-frame.html?appId=' + encodeURIComponent(appId) + '&api=' + encodeURIComponent(apiOrigin);
 
     container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;pointer-events:none;max-width:360px;width:100%;height:320px;';
+    iframe.style.cssText = 'width:100%;height:100%;border:0;border-radius:20px;overflow:hidden;pointer-events:auto;';
     iframe.src = iframeUrl;
     iframe.style.cssText = 'width:100%;height:100%;border:0;border-radius:20px;overflow:hidden;pointer-events:auto;';
     iframe.title = 'Push notification widget';
