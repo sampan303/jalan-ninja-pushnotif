@@ -44,7 +44,7 @@
     document.body.appendChild(container);
 
     window.addEventListener('message', function(event) {
-      if (event.origin !== window.location.origin) return;
+      if (event.origin !== apiOrigin) return;
       if (!event.data || event.data.type !== 'push-widget-status') return;
       var status = event.data.status;
       if (status) {

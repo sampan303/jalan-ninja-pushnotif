@@ -38,6 +38,7 @@
   </div>
   <script>
     (function() {
+      console.log('widget-frame loaded');
       function safeLocalStorage(key, value) {
         try {
           if (value === undefined) {
@@ -114,6 +115,7 @@
       });
 
       enableButton.addEventListener('click', async function() {
+        console.log('enable clicked');
         enableButton.disabled = true;
         showMessage('Memproses izin notifikasi...');
 
