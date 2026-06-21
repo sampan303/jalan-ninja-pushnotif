@@ -313,12 +313,14 @@ export default function AdminSettings({ token, setStatus }) {
           </div>
           <div className="settings-item">
             <label>Posisi Popup</label>
-            <select value={settings.popupPosition} onChange={(e) => updateField('popupPosition', e.target.value)}>
-              <option value="top-center">Top Center</option>
-              <option value="top-right">Top Right</option>
-              <option value="top-left">Top Left</option>
-              <option value="bottom-right">Bottom Right</option>
-              <option value="bottom-left">Bottom Left</option>
+            <select value={settings.widgetPosition} onChange={(e) => updateField('widgetPosition', e.target.value)}>
+              <option value="top-center">Atas Tengah</option>
+              <option value="top-right">Atas Kanan</option>
+              <option value="top-left">Atas Kiri</option>
+              <option value="center">Tengah Layar</option>
+              <option value="bottom-right">Bawah Kanan</option>
+              <option value="bottom-left">Bawah Kiri</option>
+              <option value="bottom-center">Bawah Tengah</option>
             </select>
           </div>
           <div className="settings-item">

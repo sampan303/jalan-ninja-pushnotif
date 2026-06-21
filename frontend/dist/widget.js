@@ -29,16 +29,20 @@
   }
 
   function getContainerStyle(position) {
-    var base = 'position:fixed;z-index:2147483647;pointer-events:none;max-width:360px;width:100%;height:320px;';
+    var base = 'position:fixed;z-index:2147483647;pointer-events:none;max-width:420px;width:calc(100% - 24px);height:320px;';
     switch (position) {
-      case 'bottom-left':
-        return base + 'bottom:20px;left:20px;';
-      case 'top-left':
-        return base + 'top:20px;left:20px;';
+      case 'top-center':
+        return base + 'top:20px;left:50%;transform:translateX(-50%);';
       case 'top-right':
         return base + 'top:20px;right:20px;';
-      case 'top-center':
-        return base + 'top:20px;left:50%;transform:translateX(-50%);width:auto;min-width:320px;max-width:420px;';
+      case 'top-left':
+        return base + 'top:20px;left:20px;';
+      case 'center':
+        return base + 'top:50%;left:50%;transform:translate(-50%, -50%);';
+      case 'bottom-center':
+        return base + 'bottom:20px;left:50%;transform:translateX(-50%);';
+      case 'bottom-left':
+        return base + 'bottom:20px;left:20px;';
       case 'bottom-right':
       default:
         return base + 'bottom:20px;right:20px;';
