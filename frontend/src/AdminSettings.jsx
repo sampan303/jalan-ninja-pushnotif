@@ -21,6 +21,15 @@ const defaultSettings = {
   enableWidget: true,
   allowedOrigins: '*',
   widgetPosition: 'bottom-right',
+  popupPosition: 'bottom-right',
+  popupLogoUrl: '',
+  popupImageUrl: '',
+  popupIconUrl: '',
+  popupWidth: '360px',
+  popupHeight: 'auto',
+  popupBorderRadius: '20px',
+  popupBackgroundColor: '#0f172a',
+  popupTextColor: '#eef2ff',
   subscribeTheme: 'default-dark',
   customSubscribeCss: '',
   customSubscribeHtml: ''
@@ -301,6 +310,74 @@ export default function AdminSettings({ token, setStatus }) {
               <option value="bottom-right">Bottom Right</option>
               <option value="top-right">Top Right</option>
             </select>
+          </div>
+          <div className="settings-item">
+            <label>Posisi Popup</label>
+            <select value={settings.popupPosition} onChange={(e) => updateField('popupPosition', e.target.value)}>
+              <option value="top-center">Top Center</option>
+              <option value="top-right">Top Right</option>
+              <option value="top-left">Top Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="bottom-left">Bottom Left</option>
+            </select>
+          </div>
+          <div className="settings-item">
+            <label>Popup Logo URL</label>
+            <input
+              value={settings.popupLogoUrl}
+              onChange={(e) => updateField('popupLogoUrl', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Banner/Image URL</label>
+            <input
+              value={settings.popupImageUrl}
+              onChange={(e) => updateField('popupImageUrl', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Popup Icon URL</label>
+            <input
+              value={settings.popupIconUrl}
+              onChange={(e) => updateField('popupIconUrl', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Popup Width</label>
+            <input
+              value={settings.popupWidth}
+              onChange={(e) => updateField('popupWidth', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Popup Height</label>
+            <input
+              value={settings.popupHeight}
+              onChange={(e) => updateField('popupHeight', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Border Radius</label>
+            <input
+              value={settings.popupBorderRadius}
+              onChange={(e) => updateField('popupBorderRadius', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Background Color</label>
+            <input
+              type="color"
+              value={settings.popupBackgroundColor}
+              onChange={(e) => updateField('popupBackgroundColor', e.target.value)}
+            />
+          </div>
+          <div className="settings-item">
+            <label>Text Color</label>
+            <input
+              type="color"
+              value={settings.popupTextColor}
+              onChange={(e) => updateField('popupTextColor', e.target.value)}
+            />
           </div>
           <div className="settings-item">
             <label>Strategi Prompt</label>

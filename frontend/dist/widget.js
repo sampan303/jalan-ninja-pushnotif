@@ -85,18 +85,18 @@
       return;
     }
 
-    var widgetPosition = 'bottom-right';
+    var popupPosition = 'bottom-right';
     try {
       var widgetInfoResp = await fetch(apiOrigin + '/api/widget-info?appId=' + encodeURIComponent(appId));
       if (widgetInfoResp.ok) {
         var widgetInfo = await widgetInfoResp.json();
-        widgetPosition = widgetInfo.widgetPosition || widgetPosition;
+        popupPosition = widgetInfo.popupPosition || popupPosition;
       }
     } catch (err) {
-      console.warn('Unable to load widget position:', err);
+      console.warn('Unable to load widget popup position:', err);
     }
 
-    createWidgetContainer(apiOrigin, appId, widgetPosition);
+    createWidgetContainer(apiOrigin, appId, popupPosition);
   }
 
   if (document.readyState === 'loading') {

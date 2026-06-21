@@ -8,7 +8,10 @@
     body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: transparent; }
     .widget-shell { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: transparent; }
     .widget-card { width: 100%; max-width: 360px; padding: 20px; border-radius: 20px; background: #0f172a; color: #eef2ff; box-sizing: border-box; box-shadow: 0 24px 80px rgba(0,0,0,0.24); border: 1px solid rgba(255,255,255,0.08); }
+    .widget-card img.popup-banner { width: 100%; border-radius: 14px; margin-bottom: 16px; object-fit: cover; }
     .widget-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .widget-logo { width: 40px; height: 40px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); }
+    .widget-logo img { width: 100%; height: 100%; object-fit: contain; }
     .widget-badge { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #4f94ff, #2f80ed); display: flex; align-items: center; justify-content: center; font-size: 20px; }
     .widget-title { margin: 0; font-size: 1rem; line-height: 1.3; }
     .widget-text { margin: 12px 0 18px; color: #cbd5e1; font-size: 0.95rem; line-height: 1.5; }
@@ -18,6 +21,7 @@
     .widget-button.secondary { background: rgba(255,255,255,0.08); color: #f8fafc; }
     .widget-status { margin-top: 14px; font-size: 0.9rem; color: #94a3b8; }
     .custom-subscribe-html { width: 100%; margin-top: 16px; }
+    .popup-icon { width: 28px; height: 28px; margin-right: 10px; }
   </style>
 </head>
 <body>
@@ -87,7 +91,15 @@
         popupButtonTutup: 'Nanti',
         popupText: 'Dapatkan update terbaru langsung di browser Anda jika mengizinkan notifikasi.',
         customSubscribeHtml: '',
-        customSubscribeCss: ''
+        customSubscribeCss: '',
+        popupLogoUrl: '',
+        popupImageUrl: '',
+        popupIconUrl: '',
+        popupWidth: '360px',
+        popupHeight: 'auto',
+        popupBorderRadius: '20px',
+        popupBackgroundColor: '#0f172a',
+        popupTextColor: '#eef2ff'
       };
 
       var appId = getQueryParam('appId') || 'default';
@@ -107,6 +119,65 @@
         if (enableButton) enableButton.textContent = info.popupButtonAktifkan || defaultWidgetInfo.popupButtonAktifkan;
         if (closeButton) closeButton.textContent = info.popupButtonTutup || defaultWidgetInfo.popupButtonTutup;
         widgetTextEl.textContent = info.popupText || defaultWidgetInfo.popupText;
+
+        var bannerSrc = info.popupImageUrl || defaultWidgetInfo.popupImageUrl;
+        var logoSrc = info.popupLogoUrl || defaultWidgetInfo.popupLogoUrl;
+        var iconSrc = info.popupIconUrl || defaultWidgetInfo.popupIconUrl;
+        var card = document.querySelector('.widget-card');
+
+        card.style.background = info.popupBackgroundColor || defaultWidgetInfo.popupBackgroundColor;
+        card.style.color = info.popupTextColor || defaultWidgetInfo.popupTextColor;
+        card.style.borderRadius = info.popupBorderRadius || defaultWidgetInfo.popupBorderRadius;
+        card.style.width = info.popupWidth || defaultWidgetInfo.popupWidth;
+        card.style.height = info.popupHeight || defaultWidgetInfo.popupHeight;
+
+        if (bannerSrc) {
+          var existingBanner = document.querySelector('.popup-banner');
+          if (!existingBanner) {
+            var banner = document.createElement('img');
+            banner.className = 'popup-banner';
+            banner.alt = 'Popup banner';
+            banner.src = bannerSrc;
+            card.insertBefore(banner, card.firstChild);
+          } else {
+            existingBanner.src = bannerSrc;
+          }
+        }
+
+        if (logoSrc) {
+          var logoWrapper = document.querySelector('.widget-logo');
+          if (!logoWrapper) {
+            logoWrapper = document.createElement('div');
+            logoWrapper.className = 'widget-logo';
+            var logoImg = document.createElement('img');
+            logoImg.src = logoSrc;
+            logoImg.alt = 'Logo';
+            logoWrapper.appendChild(logoImg);
+            var header = document.querySelector('.widget-header');
+            header.insertBefore(logoWrapper, header.firstChild);
+          } else {
+            var logoImg = logoWrapper.querySelector('img');
+            if (logoImg) {
+              logoImg.src = logoSrc;
+            }
+          }
+        }
+
+        if (iconSrc) {
+          var iconWrapper = document.querySelector('.popup-icon');
+          if (!iconWrapper) {
+            iconWrapper = document.createElement('img');
+            iconWrapper.className = 'popup-icon';
+            iconWrapper.src = iconSrc;
+            iconWrapper.alt = 'Icon';
+            var headerText = document.querySelector('.widget-header > div');
+            if (headerText) {
+              headerText.insertBefore(iconWrapper, headerText.firstChild);
+            }
+          } else {
+            iconWrapper.src = iconSrc;
+          }
+        }
 
         if (info.customSubscribeCss) {
           customCssStyle.textContent = info.customSubscribeCss;
